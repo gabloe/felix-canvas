@@ -55,7 +55,9 @@ replicated() {
   node -e '
     const { items } = JSON.parse(process.argv[1]);
     const done = (i) => i.leader && !i.under_replicated && !i.restoring && !i.unavailable?.length;
-    process.exit(items.length > 0 && items.every(done) ? 0 : 1);
+    if (items.length === 0 || !items.every(done)) process.exit(1);
+    const copies = new Set(items.map((i) => i.current_replicas));
+    console.log(`${items.length} shards placed, each with ${[...copies].join(" or ")} copies`);
   ' "$body"
 }
 
