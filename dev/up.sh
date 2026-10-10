@@ -31,7 +31,7 @@ if [[ "${1:-}" == "--cluster" ]]; then
 fi
 
 "${compose[@]}" -f docker-compose.yml -f docker-compose.cluster.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
-rm -f state/*.pem
+rm -f state/*.pem state/node.token state/snapshotter.token state/seeded
 mkdir -p state
 if ! "${compose[@]}" "${files[@]}" up --detach; then
   "${compose[@]}" "${files[@]}" logs >&2
@@ -39,15 +39,15 @@ if ! "${compose[@]}" "${files[@]}" up --detach; then
 fi
 
 ready() {
+  [[ -f state/seeded ]] || return 1
   for port in "${health[@]}"; do
     curl -fsS "http://127.0.0.1:$port/ready" >/dev/null 2>&1 || return 1
   done
 }
 
 # Every shard has a leader and all its copies, with none being added. A
-# broker's /ready doesn't say this: the control plane places shards on the
-# brokers that reported in first and adds the late one's copies afterwards,
-# and until it has, stopping a broker can leave a shard without a majority.
+# broker's /ready doesn't say this, and stopping a broker before it holds can
+# leave a shard without a majority.
 replicated() {
   local body
   body="$(curl -fsS -H "authorization: Bearer $(cat state/node.token)" \

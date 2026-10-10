@@ -14,12 +14,14 @@ version it was tested against.
 ### Fixed
 
 - The failover e2e test no longer fails now and then on a cluster that has just
-  started. `dev/up.sh --cluster` waits until every shard has all three copies,
-  not only until each broker is ready, and the test checks the same before it
-  stops a broker. Felix places shards before the last broker reports in and
-  copies them to it afterwards; stopping a broker before that finished could
-  leave a shard without a majority
-  ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151)).
+  started. Felix places a shard on whichever brokers are live when it is
+  created, so a broker that reported in late could be missing from some
+  shards, and stopping another one then left those shards without a majority
+  ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151),
+  [#1153](https://github.com/GetFelix/felix/issues/1153)). In the three-broker
+  dev stack the seed now creates the rooms only once every broker is live, and
+  `dev/up.sh --cluster` and the test both check that every shard has all its
+  copies.
 
 ## [0.3.0] - 2026-10-10
 

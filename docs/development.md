@@ -202,14 +202,15 @@ plane runs with short liveness windows (a 500 ms heartbeat and a 3 second
 expiry), so a stopped broker's rooms move within a few seconds rather than the
 default of about twenty.
 
-All three brokers answer `/ready` before every shard has its three copies: the
-control plane usually places shards before the last broker reports in, and
-adds that broker's copies afterwards. Until it has, stopping a broker can leave
-a shard without a majority ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151)).
-So `up.sh --cluster` also waits until `GET /v1/placement/replication` lists no
-shard short of its copies or still being given one, and the cluster compose
-raises `FELIX_SHARD_MOVES_MAX_CONCURRENT` so that takes seconds rather than
-over a minute.
+The control plane places a shard on whichever brokers are live when the shard
+is created. If one broker reports in before the others, a shard can start on
+fewer copies than it asks for, and one placed on its leader alone never gets
+the rest ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151),
+[#1153](https://github.com/GetFelix/felix/issues/1153)). So in the cluster the
+seed writes the brokers' token first, waits until all three are live
+(`CANVAS_WAIT_FOR_BROKERS`), and only then creates the rooms. `up.sh --cluster`
+also waits until `GET /v1/placement/replication` lists no shard short of its
+copies or still being given one: a broker's `/ready` doesn't say that.
 
 | Broker | Client port (UDP) | Health |
 |---|---|---|
