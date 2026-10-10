@@ -11,6 +11,16 @@ version it was tested against.
 
 ## [Unreleased]
 
+### Fixed
+
+- The failover e2e test no longer fails now and then on a cluster that has just
+  started. `dev/up.sh --cluster` waits until every shard has all three copies,
+  not only until each broker is ready, and the test checks the same before it
+  stops a broker. Felix places shards before the last broker reports in and
+  copies them to it afterwards; stopping a broker before that finished could
+  leave a shard without a majority
+  ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151)).
+
 ## [0.3.0] - 2026-10-10
 
 Tested against Felix 0.6.0-preview.5 and felix-gateway 0.3.1, which the

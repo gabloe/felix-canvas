@@ -44,9 +44,30 @@ ready() {
   done
 }
 
+# Every shard has a leader and all its copies, with none being added. A
+# broker's /ready doesn't say this: the control plane places shards on the
+# brokers that reported in first and adds the late one's copies afterwards,
+# and until it has, stopping a broker can leave a shard without a majority.
+replicated() {
+  local body
+  body="$(curl -fsS -H "authorization: Bearer $(cat state/node.token)" \
+    http://127.0.0.1:8443/v1/placement/replication 2>/dev/null)" || return 1
+  node -e '
+    const { items } = JSON.parse(process.argv[1]);
+    const done = (i) => i.leader && !i.under_replicated && !i.restoring && !i.unavailable?.length;
+    process.exit(items.length > 0 && items.every(done) ? 0 : 1);
+  ' "$body"
+}
+
+waited=0
 for _ in $(seq 1 90); do
   if ready; then
     if [[ ${#health[@]} -gt 1 ]]; then
+      if ! replicated; then
+        if ((waited++ == 0)); then echo "waiting for every shard to have all three copies"; fi
+        sleep 2
+        continue
+      fi
       # Each broker signs its own certificate; trust all three.
       cat state/broker-*-cert.pem >state/broker-cert.pem
     fi
@@ -68,6 +89,9 @@ for _ in $(seq 1 90); do
 done
 
 echo "the brokers did not become ready" >&2
+if [[ ${#health[@]} -gt 1 ]]; then
+  curl -sS -H "authorization: Bearer $(cat state/node.token)" http://127.0.0.1:8443/v1/placement/replication >&2 || true
+fi
 "${compose[@]}" "${files[@]}" ps --all >&2
 "${compose[@]}" "${files[@]}" logs >&2
 exit 1

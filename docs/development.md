@@ -202,6 +202,15 @@ plane runs with short liveness windows (a 500 ms heartbeat and a 3 second
 expiry), so a stopped broker's rooms move within a few seconds rather than the
 default of about twenty.
 
+All three brokers answer `/ready` before every shard has its three copies: the
+control plane usually places shards before the last broker reports in, and
+adds that broker's copies afterwards. Until it has, stopping a broker can leave
+a shard without a majority ([GetFelix/felix#1151](https://github.com/GetFelix/felix/issues/1151)).
+So `up.sh --cluster` also waits until `GET /v1/placement/replication` lists no
+shard short of its copies or still being given one, and the cluster compose
+raises `FELIX_SHARD_MOVES_MAX_CONCURRENT` so that takes seconds rather than
+over a minute.
+
 | Broker | Client port (UDP) | Health |
 |---|---|---|
 | `broker` (node `broker-1`) | `127.0.0.1:5000` | `127.0.0.1:8080` |
@@ -221,7 +230,8 @@ export GATEWAY_FELIX_BROKERS=$CANVAS_FELIX_BROKERS
 
 `GET /v1/placement/replication` on the control plane, with the broker's token
 from `dev/state/node.token`, names the broker that owns each room's op log.
-The failover test reads it there, kills that broker's container with
+The failover test reads it there, checks the same list shows every shard
+fully copied, kills that broker's container with
 `docker kill` (or `podman kill`, picked the same way as `dev/up.sh`), and
 starts it again at the end:
 

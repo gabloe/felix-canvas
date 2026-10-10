@@ -23,6 +23,10 @@ services:
       FELIX_NODE_EXPIRY_TIMEOUT_MS: "3000"
       FELIX_NODE_EXPIRY_SWEEP_INTERVAL_MS: "250"
       FELIX_SHARD_RECONCILE_INTERVAL_MS: "500"
+      # The control plane often places shards before the third broker reports
+      # in, then copies them to it. One copy at a time takes over a minute
+      # for the dev rooms; all at once takes a few seconds.
+      FELIX_SHARD_MOVES_MAX_CONCURRENT: "32"
 
   seed:
     environment:
