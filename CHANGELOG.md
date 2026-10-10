@@ -44,6 +44,12 @@ version it was tested against.
 - `dev/up.sh` and the failover test run on Docker or Podman, and the docs show
   the Podman commands.
 
+### Fixed
+
+- After a slow connection caught up, the notice's "Up to date · version" could
+  name the version from the moment of catching up while changes still on their
+  way landed under it. It now follows them while it shows.
+
 ## [0.2.0] - 2026-10-04
 
 Tested against Felix 0.6.0-preview.2, which the install now pins. Felix images
