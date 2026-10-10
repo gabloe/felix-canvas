@@ -42,7 +42,7 @@ services:
   # because Felix issues tokens only in exchange for an IdP token
   # (felix#954). It signs in anyone, so it has no published port.
   tokens:
-    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.1}
     command: ["dev/idp.mjs"]
     environment:
       IDP_ISSUER: http://tokens:9400
@@ -53,7 +53,7 @@ services:
   # own provider is configured.
   idp:
     profiles: [dev-idp]
-    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.1}
     command: ["dev/idp.mjs"]
     environment:
       IDP_ISSUER: ${CANVAS_OIDC_ISSUER}
@@ -66,7 +66,7 @@ services:
   # to bring your own. Also hands the state volume to the uid every other
   # canvas and Felix container runs as.
   certs:
-    image: ghcr.io/getfelix/felix-canvas:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas:${CANVAS_VERSION:-0.3.1}
     user: "0:0"
     entrypoint: ["sh", "-c"]
     command:
@@ -84,7 +84,7 @@ services:
       - state:/state
 
   seed:
-    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.1}
     command: ["dev/seed.mjs"]
     environment:
       CANVAS_FELIX_BOOTSTRAP_TOKEN: ${FELIX_BOOTSTRAP_TOKEN}
@@ -141,7 +141,7 @@ services:
     restart: unless-stopped
 
   snapshotter:
-    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.1}
     environment:
       CANVAS_FELIX_BROKERS: broker:5000
       CANVAS_FELIX_SERVER_NAME: broker
@@ -158,7 +158,7 @@ services:
     restart: unless-stopped
 
   gateway:
-    image: ghcr.io/getfelix/felix-canvas:${CANVAS_VERSION:-0.3.0}
+    image: ghcr.io/getfelix/felix-canvas:${CANVAS_VERSION:-0.3.1}
     # felix-gateway reads GATEWAY_* variables; the image carries the canvas's
     # scope file.
     environment:
