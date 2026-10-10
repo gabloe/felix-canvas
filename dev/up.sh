@@ -31,7 +31,7 @@ if [[ "${1:-}" == "--cluster" ]]; then
 fi
 
 "${compose[@]}" -f docker-compose.yml -f docker-compose.cluster.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
-rm -f state/*.pem
+rm -f state/*.pem state/node.token state/snapshotter.token state/seeded
 mkdir -p state
 if ! "${compose[@]}" "${files[@]}" up --detach; then
   "${compose[@]}" "${files[@]}" logs >&2
@@ -39,14 +39,37 @@ if ! "${compose[@]}" "${files[@]}" up --detach; then
 fi
 
 ready() {
+  [[ -f state/seeded ]] || return 1
   for port in "${health[@]}"; do
     curl -fsS "http://127.0.0.1:$port/ready" >/dev/null 2>&1 || return 1
   done
 }
 
+# Every shard has a leader and all its copies, with none being added. A
+# broker's /ready doesn't say this, and stopping a broker before it holds can
+# leave a shard without a majority.
+replicated() {
+  local body
+  body="$(curl -fsS -H "authorization: Bearer $(cat state/node.token)" \
+    http://127.0.0.1:8443/v1/placement/replication 2>/dev/null)" || return 1
+  node -e '
+    const { items } = JSON.parse(process.argv[1]);
+    const done = (i) => i.leader && !i.under_replicated && !i.restoring && !i.unavailable?.length;
+    if (items.length === 0 || !items.every(done)) process.exit(1);
+    const copies = new Set(items.map((i) => i.current_replicas));
+    console.log(`${items.length} shards placed, each with ${[...copies].join(" or ")} copies`);
+  ' "$body"
+}
+
+waited=0
 for _ in $(seq 1 90); do
   if ready; then
     if [[ ${#health[@]} -gt 1 ]]; then
+      if ! replicated; then
+        if ((waited++ == 0)); then echo "waiting for every shard to have all three copies"; fi
+        sleep 2
+        continue
+      fi
       # Each broker signs its own certificate; trust all three.
       cat state/broker-*-cert.pem >state/broker-cert.pem
     fi
@@ -68,6 +91,9 @@ for _ in $(seq 1 90); do
 done
 
 echo "the brokers did not become ready" >&2
+if [[ ${#health[@]} -gt 1 ]]; then
+  curl -sS -H "authorization: Bearer $(cat state/node.token)" http://127.0.0.1:8443/v1/placement/replication >&2 || true
+fi
 "${compose[@]}" "${files[@]}" ps --all >&2
 "${compose[@]}" "${files[@]}" logs >&2
 exit 1

@@ -29,6 +29,30 @@ async function owner(stream: string): Promise<string> {
   return shard.leader;
 }
 
+/**
+ * Shards short of their copies, being given one, or without a leader. Losing a
+ * broker while any is listed can leave that shard without a majority.
+ */
+async function unreplicated(): Promise<string[]> {
+  const token = readFileSync(new URL("node.token", STATE), "utf8").trim();
+  const response = await fetch(`${CONTROL_PLANE}/v1/placement/replication`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const { items } = (await response.json()) as {
+    items: {
+      kind: string;
+      stream: string;
+      leader: string | null;
+      under_replicated: boolean;
+      restoring?: string;
+      unavailable?: string[];
+    }[];
+  };
+  return items
+    .filter((i) => !i.leader || i.under_replicated || i.restoring || i.unavailable?.length)
+    .map((i) => `${i.kind} ${i.stream}`);
+}
+
 /** The engine `dev/up.sh` picks: CONTAINER_ENGINE, else Docker if it answers, else Podman. */
 function containerEngine(): string {
   if (process.env.CONTAINER_ENGINE) return process.env.CONTAINER_ENGINE;
@@ -99,6 +123,7 @@ test("editing carries on when the broker that owns the room is killed", async ({
   });
 
   await ana.waitForTimeout(2000);
+  await expect.poll(unreplicated, { timeout: 60_000 }).toEqual([]);
   const engine = containerEngine();
   const killed = await owner("canvas.ops.lobby");
   const killedAt = Date.now();

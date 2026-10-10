@@ -161,6 +161,36 @@ await request("POST", `${BOOTSTRAP}/internal/bootstrap/tenants/${TENANT}/initial
   },
 });
 
+// The dev stack's broker runs as uid 65532 and writes its certificate here
+// too. Elsewhere the directory is already the seed's own, or not ours to
+// change, as with a Kubernetes emptyDir.
+await mkdir(STATE, { recursive: true });
+await chmod(STATE, 0o777).catch(() => {});
+const broker = await exchange("canvas-broker", { audience: "felix-controlplane" });
+await writeFile(`${STATE}/node.token`, broker, { mode: 0o644 });
+const snapshotter = await exchange("canvas-snapshotter", {
+  requested: ["stream.subscribe", "cache.read", "cache.write"],
+});
+await writeFile(`${STATE}/snapshotter.token`, snapshotter, { mode: 0o644 });
+console.log(`wrote node.token and snapshotter.token to ${STATE}`);
+
+// Placement places a shard on whichever brokers are live when it is created,
+// and a shard placed on fewer than its replication factor waits for copies
+// that may never come (GetFelix/felix#1153). So with CANVAS_WAIT_FOR_BROKERS
+// the brokers start on the tokens above, and nothing is created until that
+// many are live.
+const brokers = Number(process.env.CANVAS_WAIT_FOR_BROKERS ?? 0);
+if (brokers > 0) {
+  console.log(`waiting for ${brokers} brokers`);
+  for (let tries = 0; ; tries++) {
+    const { items } = await request("GET", `${CONTROL_PLANE}/v1/nodes`, { token: broker });
+    const live = items.filter((item) => item.node.status.lifecycle === "live").length;
+    if (live >= brokers) break;
+    if (tries === 180) throw new Error(`only ${live} of ${brokers} brokers are live`);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
 const admin = await exchange("canvas-admin", { audience: "felix-controlplane" });
 if (ISSUER !== service.issuer) {
   console.log(`trust ${ISSUER} for browsers`);
@@ -253,19 +283,6 @@ for (const [room, members] of Object.entries(MEMBERS)) {
   }
 }
 
-// The dev stack's broker runs as uid 65532 and writes its certificate here
-// too. Elsewhere the directory is already the seed's own, or not ours to
-// change, as with a Kubernetes emptyDir.
-await mkdir(STATE, { recursive: true });
-await chmod(STATE, 0o777).catch(() => {});
-const broker = await exchange("canvas-broker", { audience: "felix-controlplane" });
-await writeFile(`${STATE}/node.token`, broker, { mode: 0o644 });
-const snapshotter = await exchange("canvas-snapshotter", {
-  requested: ["stream.subscribe", "cache.read", "cache.write"],
-});
-await writeFile(`${STATE}/snapshotter.token`, snapshotter, { mode: 0o644 });
-console.log(`wrote node.token and snapshotter.token to ${STATE}`);
-
 // In Kubernetes the tokens also go to Secrets, which the broker and
 // snapshotter pods mount. Needs NODE_EXTRA_CA_CERTS set to the cluster's CA.
 async function storeSecret(name, token) {
@@ -285,3 +302,6 @@ for (const [variable, token] of [
 ]) {
   if (process.env[variable]) await storeSecret(process.env[variable], token);
 }
+
+// up.sh waits for this before it calls the stack ready.
+await writeFile(`${STATE}/seeded`, "");

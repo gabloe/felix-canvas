@@ -24,11 +24,23 @@ services:
       FELIX_NODE_EXPIRY_SWEEP_INTERVAL_MS: "250"
       FELIX_SHARD_RECONCILE_INTERVAL_MS: "500"
 
+  # The brokers start once the seed has written their token, and the seed
+  # creates the rooms once all three are live, so every shard is placed on
+  # all three from the start.
   seed:
     environment:
       CANVAS_REPLICAS: "3"
+      CANVAS_WAIT_FOR_BROKERS: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /state/node.token"]
+      interval: 1s
+      timeout: 2s
+      retries: 60
 
   broker:
+    depends_on: !override
+      seed:
+        condition: service_healthy
     environment: &cluster
       FELIX_NODE_ID: broker-1
       FELIX_NODE_ADVERTISE_ADDR: 172.30.7.11:5001
@@ -48,6 +60,9 @@ services:
     extends:
       file: docker-compose.yml
       service: broker
+    depends_on: !override
+      seed:
+        condition: service_healthy
     environment:
       <<: *cluster
       FELIX_NODE_ID: broker-2
@@ -68,6 +83,9 @@ services:
     extends:
       file: docker-compose.yml
       service: broker
+    depends_on: !override
+      seed:
+        condition: service_healthy
     environment:
       <<: *cluster
       FELIX_NODE_ID: broker-3
