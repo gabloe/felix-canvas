@@ -13,9 +13,9 @@ allow_throttle = true
 # a per-address cap would limit the whole install.
 sessions_per_ip = 0
 # A tab holds one session, and a second while its history timeline is open.
-# The gateway keeps a session whose network vanished (a laptop sleeping or
-# changing networks) until TCP gives up, so the default of 8 leaves little
-# room for those beside a few tabs.
+# A session whose network vanished (a laptop sleeping or changing networks)
+# keeps its slot for up to 30 seconds, until the gateway's heartbeat closes
+# it, so the default of 8 leaves little room for those beside a few tabs.
 sessions_per_principal = 16
 
 [scope]
