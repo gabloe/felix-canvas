@@ -11,6 +11,13 @@ version it was tested against.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-10
+
+Tested against Felix 0.6.0-preview.5 and felix-gateway 0.3.2, which the
+install now pins. A session whose network drops without a close frees its slot
+within about 30 seconds, and the failover e2e test no longer fails on a
+cluster that has just started.
+
 ### Changed
 
 - The gateway is felix-gateway 0.3.2, and the page uses `felix-gateway-client`

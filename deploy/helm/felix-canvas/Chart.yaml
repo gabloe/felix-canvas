@@ -5,9 +5,9 @@ description: >-
   the web page) scaled horizontally, one snapshotter, and the seed that
   creates the tenant, the rooms and the service tokens.
 type: application
-version: 0.3.0
+version: 0.3.1
 # The canvas release the defaults were written against. Image tags default to it.
-appVersion: "0.3.0"
+appVersion: "0.3.1"
 kubeVersion: ">=1.25.0-0"
 home: https://github.com/GetFelix/felix-canvas
 sources:
