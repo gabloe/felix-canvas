@@ -11,6 +11,16 @@ version it was tested against.
 
 ## [Unreleased]
 
+### Changed
+
+- The gateway is felix-gateway 0.3.2, and the page uses `felix-gateway-client`
+  0.3.2. A session whose network drops without a close, such as a laptop going
+  to sleep, is now closed after 30 seconds without a word from the browser
+  instead of when TCP gives up minutes later, so it no longer holds one of the
+  person's 16 session slots meanwhile. `GATEWAY_PING_INTERVAL_S` (5) and
+  `GATEWAY_PING_TIMEOUT_S` (30) set the times
+  ([GetFelix/felix-gateway#16](https://github.com/GetFelix/felix-gateway/issues/16)).
+
 ### Fixed
 
 - The failover e2e test no longer fails now and then on a cluster that has just

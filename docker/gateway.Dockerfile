@@ -3,7 +3,7 @@
 # origin as /ws, with the canvas's scope file.
 # Build from the repository root: docker build -f docker/gateway.Dockerfile .
 
-ARG GATEWAY_VERSION=0.3.1
+ARG GATEWAY_VERSION=0.3.2
 
 FROM node:24-trixie-slim AS web
 WORKDIR /src

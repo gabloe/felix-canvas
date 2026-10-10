@@ -9,7 +9,7 @@ the seed read.
 
 | Service | Image | Holds state? | Job |
 |---|---|---|---|
-| `gateway` | `ghcr.io/getfelix/felix-canvas` | No | [felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.1 with the web page and the canvas's scope file added. Serves the page and `/ws` from one origin, exchanges each browser's sign-in for a Felix token narrowed to one room, and relays to Felix |
+| `gateway` | `ghcr.io/getfelix/felix-canvas` | No | [felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.2 with the web page and the canvas's scope file added. Serves the page and `/ws` from one origin, exchanges each browser's sign-in for a Felix token narrowed to one room, and relays to Felix |
 | `snapshotter` | `ghcr.io/getfelix/felix-canvas-snapshotter` | No | Keeps each room's folded state in the Felix cache, so joining a busy room is fast |
 | `broker` | `ghcr.io/getfelix/felix-broker` | Yes, `felix-data` | Felix: every room's op log, snapshots, member list and counters |
 | `controlplane` | `ghcr.io/getfelix/felix-controlplane` | Yes, `controlplane-data` | Felix: the tenant, rooms, roles and token exchange, kept in its own Raft log |
@@ -180,19 +180,21 @@ created when [self-service rooms](#self-service-rooms) are on.
 The gateway learns those names from its scope file, `deploy/scope.toml`, which
 the image carries at `/etc/felix-gateway/scope.toml`. The seed creates the same
 names, so leave the file as it is unless you change both. felix-gateway's
-[configuration reference](https://github.com/GetFelix/felix-gateway/blob/v0.3.1/docs/configuration.md#the-scope-file)
+[configuration reference](https://github.com/GetFelix/felix-gateway/blob/v0.3.2/docs/configuration.md#the-scope-file)
 describes the format.
 
 The scope file also sets the gateway's
-[write limits](https://github.com/GetFelix/felix-gateway/blob/v0.3.1/docs/configuration.md#write-limits).
+[write limits](https://github.com/GetFelix/felix-gateway/blob/v0.3.2/docs/configuration.md#write-limits).
 The canvas keeps the gateway's rates, 50 writes a second per session and 100
 per person, and paces its own writes below them. It turns off the cap of 32
 sessions per client address, because behind Caddy or an ingress every browser
 comes from the proxy's address, and it lets an op carry up to 256 KiB so a
 long pen stroke fits. Each person may hold 16 sessions at once rather than the
 gateway's 8: a tab holds one, and a second while its history timeline is
-open, and the gateway keeps a session whose network vanished, such as a laptop
-going to sleep, until TCP gives up on it.
+open, and a session whose network vanished, such as a laptop going to sleep,
+keeps its slot until the gateway's heartbeat closes it. The gateway pings every
+session every 5 seconds and closes one that has sent nothing for 30;
+`GATEWAY_PING_INTERVAL_S` and `GATEWAY_PING_TIMEOUT_S` change those times.
 
 ## Self-service rooms
 
@@ -461,7 +463,7 @@ brokers scaled to zero so nothing is mid-write.
 ### Gateway
 
 The gateway is felix-gateway, which reads `GATEWAY_*` variables. Its
-[configuration reference](https://github.com/GetFelix/felix-gateway/blob/v0.3.1/docs/configuration.md)
+[configuration reference](https://github.com/GetFelix/felix-gateway/blob/v0.3.2/docs/configuration.md)
 lists them all. The canvas image sets these:
 
 | Variable | In the image | Meaning |
