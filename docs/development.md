@@ -29,15 +29,15 @@ Delete the Codespace when the work is merged.
 ## Running locally
 
 You need Docker or Podman, Rust 1.97 or later, and Node 24. The gateway is
-[felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.0; install it
+[felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.1; install it
 once:
 
 ```bash
-cargo install --locked felix-gateway --version 0.3.0
+cargo install --locked felix-gateway --version 0.3.1
 ```
 
 1. Start Felix. This pulls `ghcr.io/getfelix/felix-broker` and
-   `felix-controlplane` at `0.6.0-preview.4`, starts a stand-in sign-in service on
+   `felix-controlplane` at `0.6.0-preview.5`, starts a stand-in sign-in service on
    `127.0.0.1:9400`, creates the `lobby` and `studio` rooms, and writes the
    snapshotter's token and the broker's certificate to `dev/state/`:
 
@@ -314,10 +314,10 @@ Every pull request also runs it as a dry run against the version in the tree.
 
 Two Playwright specs measure rather than check, so they skip unless asked.
 The fanout spec needs felix-gateway's `viewers` example, built from a checkout
-of its `v0.3.0` tag:
+of its `v0.3.1` tag:
 
 ```bash
-git clone --branch v0.3.0 https://github.com/GetFelix/felix-gateway ../felix-gateway
+git clone --branch v0.3.1 https://github.com/GetFelix/felix-gateway ../felix-gateway
 cargo build --release --manifest-path ../felix-gateway/Cargo.toml -p felix-gateway --example viewers
 export CANVAS_VIEWERS_BIN=$PWD/../felix-gateway/target/release/examples/viewers
 

@@ -97,7 +97,7 @@ export class Chrome {
   #convergedAt: number | null = null;
   #fellBehindSeen = 0;
   /** The slow-connection notice: catching up, or caught up with the version reached. */
-  #notice: { version: string | null; until: number } | null = null;
+  #notice: { version: string | null; applied: number; until: number } | null = null;
   #toastTimer = 0;
   #account = { who: "", room: "" };
   /** The room's name, for a room people made, which only has an id in Felix. */
@@ -326,12 +326,16 @@ export class Chrome {
     const session = this.#session;
     if (session.fellBehind !== this.#fellBehindSeen) {
       this.#fellBehindSeen = session.fellBehind;
-      this.#notice = { version: null, until: Infinity };
+      this.#notice = { version: null, applied: -1, until: Infinity };
     }
-    if (this.#notice?.version === null && session.caughtUp) {
+    // Changes still on their way when the tab caught up land while the notice
+    // shows, so its version follows them rather than the moment of catching up.
+    const applied = session.replica.next;
+    if (this.#notice && session.caughtUp && this.#notice.applied !== applied) {
       this.#notice = {
         version: stateHash(session.replica.confirmed).slice(0, 4),
-        until: now + CAUGHT_UP_NOTICE_MS,
+        applied,
+        until: this.#notice.version === null ? now + CAUGHT_UP_NOTICE_MS : this.#notice.until,
       };
     }
     if (this.#notice && now > this.#notice.until) this.#notice = null;

@@ -1,9 +1,9 @@
 # How the canvas talks to the gateway
 
 The canvas runs [felix-gateway](https://github.com/GetFelix/felix-gateway)
-0.3.0 between browsers and Felix. Its
-[protocol](https://github.com/GetFelix/felix-gateway/blob/v0.3.0/docs/protocol.md)
-and [configuration](https://github.com/GetFelix/felix-gateway/blob/v0.3.0/docs/configuration.md)
+0.3.1 between browsers and Felix. Its
+[protocol](https://github.com/GetFelix/felix-gateway/blob/v0.3.1/docs/protocol.md)
+and [configuration](https://github.com/GetFelix/felix-gateway/blob/v0.3.1/docs/configuration.md)
 are documented there. This page covers what is specific to the canvas: its
 scope file, the order it joins and reads history in, how it finds a loss, and
 what its payloads hold.

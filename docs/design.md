@@ -170,7 +170,7 @@ caches and counters each room owns, under short aliases the browser uses.
 those resources a canvas lives in the browser and the snapshotter, so the same
 gateway can serve another application on Felix with a different scope file.
 It now has its own repository, [felix-gateway](https://github.com/GetFelix/felix-gateway), and
-the canvas runs its 0.3.0 release.
+the canvas runs its 0.3.1 release.
 
 The snapshotter is a separate process on purpose. Snapshot writes are throughput
 work and must never share a fate with an interactive socket, and running it as a
