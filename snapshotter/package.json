@@ -1,6 +1,6 @@
 {
   "name": "@felix-canvas/snapshotter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The snapshotter, which keeps each room's snapshot in the Felix cache, and the rooms service",
   "private": true,
   "license": "MIT",
@@ -13,7 +13,7 @@
     "rooms": "node dist/rooms-main.js"
   },
   "dependencies": {
-    "@felix-canvas/model": "0.2.0",
+    "@felix-canvas/model": "0.3.0",
     "felix-client": "0.6.0-preview.4"
   },
   "devDependencies": {

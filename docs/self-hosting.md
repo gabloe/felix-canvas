@@ -27,7 +27,7 @@ with cosign by the images workflow when a release is published. The release note
 list each image's digest. To check one before you run it:
 
 ```bash
-cosign verify ghcr.io/getfelix/felix-canvas:0.2.0 \
+cosign verify ghcr.io/getfelix/felix-canvas:0.3.0 \
   --certificate-identity-regexp 'https://github.com/GetFelix/felix-canvas/.github/workflows/images.yml@refs/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -36,7 +36,7 @@ The Helm chart is published as `oci://ghcr.io/getfelix/charts/felix-canvas` and
 signed by the release workflow:
 
 ```bash
-cosign verify ghcr.io/getfelix/charts/felix-canvas:0.2.0 \
+cosign verify ghcr.io/getfelix/charts/felix-canvas:0.3.0 \
   --certificate-identity-regexp 'https://github.com/GetFelix/felix-canvas/.github/workflows/release.yml@refs/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -54,8 +54,8 @@ because the broker reserves a segment up front for each log a room writes to
    release's version:
 
    ```bash
-   curl -fsSL https://github.com/GetFelix/felix-canvas/releases/download/v0.2.0/felix-canvas-compose-0.2.0.tar.gz | tar xz
-   cd felix-canvas-compose-0.2.0
+   curl -fsSL https://github.com/GetFelix/felix-canvas/releases/download/v0.3.0/felix-canvas-compose-0.3.0.tar.gz | tar xz
+   cd felix-canvas-compose-0.3.0
    ```
 
    `SHA256SUMS` on the same release has its checksum.
@@ -369,11 +369,11 @@ kind, with the values in `deploy/helm/felix-canvas/ci/`.
 
 3. This chart, from the release, with your provider and rooms. Its seed Job
    stores the broker credential in the Secret `felix-canvas-broker-credential`.
-   Each release also attaches the chart as `felix-canvas-0.2.0.tgz`, which
+   Each release also attaches the chart as `felix-canvas-0.3.0.tgz`, which
    `helm install` takes in place of the `oci://` reference:
 
    ```bash
-   helm install felix-canvas oci://ghcr.io/getfelix/charts/felix-canvas --version 0.2.0 -f canvas-values.yaml
+   helm install felix-canvas oci://ghcr.io/getfelix/charts/felix-canvas --version 0.3.0 -f canvas-values.yaml
    kubectl wait --for=condition=complete job -l app.kubernetes.io/component=seed
    ```
 

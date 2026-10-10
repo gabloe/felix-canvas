@@ -9,7 +9,7 @@
 # docs/self-hosting.md describes each setting.
 services:
   rooms:
-    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.2.0}
+    image: ghcr.io/getfelix/felix-canvas-snapshotter:${CANVAS_VERSION:-0.3.0}
     command: ["snapshotter/dist/rooms-main.js"]
     environment:
       CANVAS_ROOMS_LISTEN: 0.0.0.0:8789
