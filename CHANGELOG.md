@@ -11,6 +11,14 @@ version it was tested against.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-10
+
+Tested against Felix 0.6.0-preview.5 and felix-gateway 0.3.1, which the
+install now pins. The page caps its own writes so fast drawing stays under the
+gateway's new limits, a person can have 16 sessions open instead of 8, and the
+"Up to date" notice no longer names a stale version after catching up.
+Self-service rooms and invite links are new and off by default.
+
 ### Added
 
 - Self-service rooms, off unless you turn them on: a signed-in person creates
@@ -40,7 +48,6 @@ version it was tested against.
 - The seed also creates the `canvas.rooms` cache, and the snapshotter folds
   every room listed there besides `CANVAS_ROOMS`, starting and stopping as
   rooms are created and deleted, without a restart (#79).
-
 - `dev/up.sh` and the failover test run on Docker or Podman, and the docs show
   the Podman commands.
 

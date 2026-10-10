@@ -1,6 +1,6 @@
 {
   "name": "@felix-canvas/model",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The Felix Canvas op schema and its MessagePack encoding",
   "private": true,
   "license": "MIT",
