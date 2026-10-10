@@ -101,7 +101,7 @@ To work on the code with a local gateway, snapshotter and page, follow
 
 A browser speaks WebSocket to a stateless Rust gateway, which relays to Felix
 over QUIC with a token narrowed to the browser's room. The gateway is
-[felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.0, and the
+[felix-gateway](https://github.com/GetFelix/felix-gateway) 0.3.1, and the
 browser talks to it through its `felix-gateway-client` package. The browser's canvas is
 a fold of the room's op log in offset order, so two browsers that have applied
 the same prefix hold the same canvas and can confirm it with a state hash. A

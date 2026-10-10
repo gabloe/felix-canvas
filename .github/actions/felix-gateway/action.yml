@@ -3,7 +3,7 @@ description: Install the felix-gateway release the canvas runs, from crates.io, 
 inputs:
   version:
     description: The felix-gateway version. Keep it in step with docker/gateway.Dockerfile.
-    default: 0.3.0
+    default: 0.3.1
 runs:
   using: composite
   steps:
